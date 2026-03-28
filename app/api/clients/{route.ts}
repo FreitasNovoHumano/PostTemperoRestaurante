@@ -1,0 +1,26 @@
+import { NextResponse } from "next/server";
+import { getClients, createClient } from "@/services/client.service";
+
+/**
+ * GET /api/clients
+ * Retorna todos os clientes
+ */
+export async function GET() {
+  const clients = getClients();
+
+  return NextResponse.json(clients);
+}
+
+/**
+ * POST /api/clients
+ * Cria um novo cliente
+ */
+export async function POST(req: Request) {
+  // Dados enviados no body
+  const body = await req.json();
+
+  // Cria cliente via service
+  const newClient = createClient(body);
+
+  return NextResponse.json(newClient);
+}
