@@ -24,3 +24,30 @@ export async function POST(req: Request) {
 
   return NextResponse.json(newClient);
 }
+
+/**
+ * 👥 API de Clientes
+ *
+ * GET  -> lista clientes
+ * POST -> cria cliente
+ */
+
+import { clientService } from "@/services/client.service";
+import { NextResponse } from "next/server";
+
+/**
+ * Lista todos os clientes
+ */
+export async function GET() {
+  const clients = await clientService.findAll();
+  return NextResponse.json(clients);
+}
+
+/**
+ * Cria novo cliente
+ */
+export async function POST(req: Request) {
+  const body = await req.json();
+  const client = await clientService.create(body);
+  return NextResponse.json(client);
+}

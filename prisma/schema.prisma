@@ -1,0 +1,47 @@
+/**
+ * 🧱 Estrutura do Banco de Dados
+ */
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/**
+ * Usuários do sistema
+ */
+model User {
+  id       String @id @default(uuid())
+  email    String @unique
+  password String
+}
+
+/**
+ * Clientes (restaurantes)
+ */
+model Client {
+  id    String @id @default(uuid())
+  name  String
+  email String?
+
+  posts Post[]
+}
+
+/**
+ * Posts de redes sociais
+ */
+model Post {
+  id        String   @id @default(uuid())
+  title     String
+  content   String
+  imageUrl  String?
+  status    String   @default("draft") // draft | scheduled | published
+  createdAt DateTime @default(now())
+
+  clientId String
+  client   Client @relation(fields: [clientId], references: [id])
+}

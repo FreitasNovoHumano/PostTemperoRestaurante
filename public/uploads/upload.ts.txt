@@ -1,0 +1,10 @@
+const formData = new FormData();
+formData.append("file", file);
+
+const res = await fetch("/api/media/upload", {
+  method: "POST",
+  body: formData,
+});
+
+const data = await res.json();
+console.log(data.url);

@@ -50,3 +50,61 @@ export function updateClient(id: number, data: any) {
 export function deleteClient(id: number) {
   clients = clients.filter(c => c.id !== id);
 }
+
+/**
+ * 👥 Client Service
+ *
+ * Camada responsável por toda lógica relacionada a clientes.
+ *
+ * 📌 Boa prática:
+ * Nunca acessar o Prisma direto nas rotas.
+ * Sempre usar services.
+ */
+
+import { prisma } from "@/lib/prisma";
+
+export const clientService = {
+  /**
+   * Cria um novo cliente
+   */
+  async create(data: { name: string; email?: string }) {
+    return prisma.client.create({ data });
+  },
+
+  /**
+   * Retorna todos os clientes com seus posts
+   */
+  async findAll() {
+    return prisma.client.findMany({
+      include: { posts: true },
+    });
+  },
+
+  /**
+   * Busca cliente por ID
+   */
+  async findById(id: string) {
+    return prisma.client.findUnique({
+      where: { id },
+    });
+  },
+
+  /**
+   * Atualiza cliente
+   */
+  async update(id: string, data: any) {
+    return prisma.client.update({
+      where: { id },
+      data,
+    });
+  },
+
+  /**
+   * Remove cliente
+   */
+  async delete(id: string) {
+    return prisma.client.delete({
+      where: { id },
+    });
+  },
+};
