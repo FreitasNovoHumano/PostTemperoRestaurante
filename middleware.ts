@@ -12,6 +12,7 @@ export function middleware(req: NextRequest) {
   // Verifica se a rota atual é pública (ex: login)
   const isAuthRoute = req.nextUrl.pathname.startsWith("/login");
 
+  
   // Caso não tenha token e não seja rota pública → redireciona
   if (!token && !isAuthRoute) {
     return NextResponse.redirect(new URL("/login", req.url));

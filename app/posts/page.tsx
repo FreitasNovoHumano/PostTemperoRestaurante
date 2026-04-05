@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
  * 📝 Tela de Posts (real)
  */
 
+
 export default function PostsPage() {
   const [posts, setPosts] = useState<any[]>([]);
   const [title, setTitle] = useState("");
