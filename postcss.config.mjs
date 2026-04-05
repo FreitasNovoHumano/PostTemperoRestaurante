@@ -1,10 +1,10 @@
 /**
- * ⚙️ Configuração compatível com Next + Turbopack
+ * ⚙️ PostCSS (novo padrão Tailwind)
  */
 
 export default {
   plugins: {
-    tailwindcss: {},
+    "@tailwindcss/postcss": {},
     autoprefixer: {},
   },
 };
