@@ -1,5 +1,5 @@
 /**
- * 🧱 Estrutura do Banco de Dados
+ * 🧱 SCHEMA COMPLETO - SaaS Restaurante IA
  */
 
 generator client {
@@ -12,27 +12,33 @@ datasource db {
 }
 
 /**
- * Usuários do sistema
+ * 👤 Usuário (Auth - NextAuth)
  */
 model User {
-  id       String @id @default(uuid())
-  email    String @unique
-  password String
+  id       String  @id @default(uuid())
+  name     String?
+  email    String  @unique
+  password String?
+
+  clients Client[]
 }
 
 /**
- * Clientes (restaurantes)
+ * 🏢 Cliente (restaurante)
  */
 model Client {
   id    String @id @default(uuid())
   name  String
   email String?
 
+  userId String
+  user   User @relation(fields: [userId], references: [id])
+
   posts Post[]
 }
 
 /**
- * Posts de redes sociais
+ * 📝 Post
  */
 model Post {
   id        String   @id @default(uuid())
@@ -40,15 +46,42 @@ model Post {
   content   String
   imageUrl  String?
   status    String   @default("draft") // draft | scheduled | published
+  scheduled DateTime?
   createdAt DateTime @default(now())
 
   clientId String
   client   Client @relation(fields: [clientId], references: [id])
+
+  comments PostComment[]
 }
 
+/**
+ * 💬 Comentários
+ */
 model PostComment {
   id        String   @id @default(uuid())
   comment   String
-  postId    String
+  createdAt DateTime @default(now())
+
+  postId String
+  post   Post @relation(fields: [postId], references: [id])
+}
+
+/**
+ * 📦 Templates
+ */
+model Template {
+  id      String @id @default(uuid())
+  title   String
+  content String
+}
+
+/**
+ * 📊 Logs de IA (opcional - controle)
+ */
+model AILog {
+  id        String   @id @default(uuid())
+  prompt    String
+  response  String
   createdAt DateTime @default(now())
 }
