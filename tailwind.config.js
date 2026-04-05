@@ -1,7 +1,5 @@
 /**
- * 🎨 Tailwind Config
- *
- * Define onde o Tailwind deve procurar classes
+ * 🎨 Configuração do Tailwind
  */
 
 module.exports = {

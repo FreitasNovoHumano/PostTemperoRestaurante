@@ -1,7 +1,5 @@
 /**
- * ⚙️ PostCSS Config
- *
- * Integra Tailwind ao projeto
+ * ⚙️ Configuração do PostCSS
  */
 
 module.exports = {
