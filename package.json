@@ -21,8 +21,7 @@
     "typescript": "6.0.2"
   },
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start"
-  }
+  "dev": "next dev",
+  "build": "next build --no-turbo"
+}
 }
