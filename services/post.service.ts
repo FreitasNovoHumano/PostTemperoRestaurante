@@ -47,4 +47,26 @@ export const postService = {
       where: { id },
     });
   },
+
+  /**
+ * 🔁 Duplica um post existente
+ */
+
+async duplicate(postId: string) {
+  const post = await prisma.post.findUnique({
+    where: { id: postId },
+  });
+
+  if (!post) throw new Error("Post não encontrado");
+
+  return prisma.post.create({
+    data: {
+      title: post.title + " (cópia)",
+      content: post.content,
+      imageUrl: post.imageUrl,
+      clientId: post.clientId,
+      status: "draft",
+    },
+  });
+}
 };
