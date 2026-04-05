@@ -1,9 +1,12 @@
 "use client";
 
 /**
- * 📅 Tela de Calendário
+ * 📅 Página de Calendário
  *
- * Exibe posts organizados por data
+ * Exibe posts em formato simples (MVP)
+ * Futuro:
+ * - grid mensal
+ * - drag and drop
  */
 
 import { useEffect, useState } from "react";
@@ -11,6 +14,9 @@ import { useEffect, useState } from "react";
 export default function CalendarPage() {
   const [posts, setPosts] = useState<any[]>([]);
 
+  /**
+   * Carrega posts ao iniciar
+   */
   useEffect(() => {
     fetch("/api/posts/calendar?clientId=1")
       .then((res) => res.json())
@@ -19,7 +25,7 @@ export default function CalendarPage() {
 
   return (
     <div>
-      <h1>Calendário</h1>
+      <h1>📅 Calendário</h1>
 
       {posts.map((post) => (
         <div key={post.id}>

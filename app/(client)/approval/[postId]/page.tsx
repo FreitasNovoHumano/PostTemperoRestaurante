@@ -1,12 +1,11 @@
 "use client";
 
 /**
- * 👨‍🍳 Tela de Aprovação (Cliente)
+ * 👨‍🍳 Página de Aprovação (Cliente)
  *
  * Cliente pode:
  * - Aprovar
  * - Rejeitar
- * - Comentar
  */
 
 import { useParams } from "next/navigation";
@@ -14,21 +13,21 @@ import { useParams } from "next/navigation";
 export default function ApprovalPage() {
   const { postId } = useParams();
 
+  /**
+   * Envia ação de aprovação/rejeição
+   */
   async function handleAction(status: string) {
     await fetch("/api/approvals", {
       method: "POST",
-      body: JSON.stringify({
-        postId,
-        status,
-      }),
+      body: JSON.stringify({ postId, status }),
     });
 
-    alert("Ação realizada!");
+    alert("Ação realizada com sucesso!");
   }
 
   return (
     <div>
-      <h1>Aprovação de Post</h1>
+      <h1>✅ Aprovação de Post</h1>
 
       <button onClick={() => handleAction("approved")}>
         Aprovar

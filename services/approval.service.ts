@@ -1,27 +1,35 @@
 /**
  * ✅ Approval Service
  *
- * Controla aprovação/rejeição de posts
+ * Responsável por:
+ * - Aprovar post
+ * - Rejeitar post
+ *
+ * Regra de negócio:
+ * - Approved → vira "published"
+ * - Rejected → volta para "draft"
  */
 
 import { prisma } from "@/lib/prisma";
 
 export const approvalService = {
-  async approve(postId: string, feedback?: string) {
+  /**
+   * Aprova um post
+   */
+  async approve(postId: string) {
     return prisma.post.update({
       where: { id: postId },
-      data: {
-        status: "published",
-      },
+      data: { status: "published" },
     });
   },
 
-  async reject(postId: string, feedback?: string) {
+  /**
+   * Rejeita um post
+   */
+  async reject(postId: string) {
     return prisma.post.update({
       where: { id: postId },
-      data: {
-        status: "draft",
-      },
+      data: { status: "draft" },
     });
   },
 };
