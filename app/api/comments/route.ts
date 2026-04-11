@@ -1,19 +1,21 @@
 /**
- * 🌐 API — COMMENTS
+ * 🌐 API — COMMENTS (VERSÃO SÊNIOR)
  * =====================================================
  *
  * 🎯 OBJETIVO:
+ * - GET → listar comentários
  * - POST → criar comentário
- * - GET → listar comentários por post
+ *
+ * 🧩 PADRÃO:
+ * - Auth centralizado
+ * - Segurança multi-tenant
+ * - Resposta padronizada
  */
 
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getServerSession } from "next-auth";
-import { authOptions } from "../auth/[...nextauth]/route";
+import { getUserSession } from "@/lib/auth";
 import { notifyNewComment } from "@/lib/notifications";
-
-await notifyNewComment(session.user.email, content);
 
 /**
  * 📋 GET /api/comments?postId=xxx
@@ -22,52 +24,47 @@ export async function GET(req: Request) {
   try {
 
     /**
-     * 🔐 Sessão
+     * 🔐 AUTH
      */
-    const session = await getServerSession(authOptions);
+    const sessionUser = await getUserSession();
 
-    if (!session?.user?.email) {
+    if (!sessionUser) {
       return NextResponse.json(
-        { error: "Não autorizado" },
+        { success: false, error: "Não autorizado" },
         { status: 401 }
       );
     }
 
     /**
-     * 🔎 Query params
+     * 🔎 QUERY
      */
     const { searchParams } = new URL(req.url);
     const postId = searchParams.get("postId");
 
-    /**
-     * ❌ Validação
-     */
     if (!postId) {
       return NextResponse.json(
-        { error: "postId é obrigatório" },
+        { success: false, error: "postId é obrigatório" },
         { status: 400 }
       );
     }
 
     /**
-     * 🔎 Busca usuário + clientes
+     * 🔎 USER
      */
     const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
-      include: {
-        clients: true,
-      },
+      where: { email: sessionUser.email },
+      include: { clients: true },
     });
 
     if (!user) {
       return NextResponse.json(
-        { error: "Usuário não encontrado" },
+        { success: false, error: "Usuário não encontrado" },
         { status: 404 }
       );
     }
 
     /**
-     * 🔎 Busca post
+     * 🔎 POST
      */
     const post = await prisma.post.findUnique({
       where: { id: postId },
@@ -75,41 +72,43 @@ export async function GET(req: Request) {
 
     if (!post) {
       return NextResponse.json(
-        { error: "Post não encontrado" },
+        { success: false, error: "Post não encontrado" },
         { status: 404 }
       );
     }
 
     /**
-     * 🔒 Segurança
+     * 🔒 SECURITY
      */
     const ownsClient = user.clients.some(
-      (c) => c.id === post.clientId
+      (client) => client.id === post.clientId
     );
 
     if (!ownsClient) {
       return NextResponse.json(
-        { error: "Acesso negado" },
+        { success: false, error: "Acesso negado" },
         { status: 403 }
       );
     }
 
     /**
-     * 📋 Buscar comentários
+     * 📋 COMMENTS
      */
     const comments = await prisma.comment.findMany({
       where: { postId },
       orderBy: { createdAt: "desc" },
     });
 
-    /**
-     * ✅ Retorno
-     */
-    return NextResponse.json(comments);
+    return NextResponse.json(
+      { success: true, data: comments },
+      { status: 200 }
+    );
 
   } catch (error) {
+    console.error("Erro GET comments:", error);
+
     return NextResponse.json(
-      { error: "Erro ao buscar comentários" },
+      { success: false, error: "Erro ao buscar comentários" },
       { status: 500 }
     );
   }
@@ -121,59 +120,81 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   try {
 
-    const session = await getServerSession(authOptions);
+    /**
+     * 🔐 AUTH
+     */
+    const sessionUser = await getUserSession();
 
-    if (!session?.user?.email) {
+    if (!sessionUser) {
       return NextResponse.json(
-        { error: "Não autorizado" },
+        { success: false, error: "Não autorizado" },
         { status: 401 }
       );
     }
 
+    /**
+     * 📥 BODY
+     */
     const body = await req.json();
-    const { content, postId } = body;
+
+    const { content, postId } = body as {
+      content?: string;
+      postId?: string;
+    };
 
     if (!content || !postId) {
       return NextResponse.json(
-        { error: "Dados inválidos" },
+        { success: false, error: "Dados inválidos" },
         { status: 400 }
       );
     }
 
+    /**
+     * 🔎 USER
+     */
     const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
+      where: { email: sessionUser.email },
       include: { clients: true },
     });
 
     if (!user) {
       return NextResponse.json(
-        { error: "Usuário não encontrado" },
+        { success: false, error: "Usuário não encontrado" },
         { status: 404 }
       );
     }
 
+    /**
+     * 🔎 POST
+     */
     const post = await prisma.post.findUnique({
       where: { id: postId },
     });
 
     if (!post) {
       return NextResponse.json(
-        { error: "Post não encontrado" },
+        { success: false, error: "Post não encontrado" },
         { status: 404 }
       );
     }
 
+    /**
+     * 🔒 SECURITY
+     */
     const ownsClient = user.clients.some(
-      (c) => c.id === post.clientId
+      (client) => client.id === post.clientId
     );
 
     if (!ownsClient) {
       return NextResponse.json(
-        { error: "Acesso negado" },
+        { success: false, error: "Acesso negado" },
         { status: 403 }
       );
     }
 
+    /**
+     * 💬 CREATE COMMENT
+     */
     const comment = await prisma.comment.create({
       data: {
         content,
@@ -181,11 +202,21 @@ export async function POST(req: Request) {
       },
     });
 
-    return NextResponse.json(comment, { status: 201 });
+    /**
+     * 📧 NOTIFICAÇÃO (AGORA NO LUGAR CERTO)
+     */
+    await notifyNewComment(sessionUser.email, content);
+
+    return NextResponse.json(
+      { success: true, data: comment },
+      { status: 201 }
+    );
 
   } catch (error) {
+    console.error("Erro POST comments:", error);
+
     return NextResponse.json(
-      { error: "Erro ao criar comentário" },
+      { success: false, error: "Erro ao criar comentário" },
       { status: 500 }
     );
   }

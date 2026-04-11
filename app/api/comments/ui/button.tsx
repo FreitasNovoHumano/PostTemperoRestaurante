@@ -16,8 +16,4 @@ export default function Button({
       {loading ? "Carregando..." : children}
     </button>
   );
-
-  <Button loading={mutation.isPending}>
-  Salvar
-</Button>
 }

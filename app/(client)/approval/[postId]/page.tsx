@@ -1,22 +1,27 @@
 "use client";
 
 /**
- * 👥 CLIENTES PAGE (COM BANCO)
+ * 👥 CLIENTES PAGE (VERSÃO FINAL PROFISSIONAL)
  * =====================================================
  *
- * FUNCIONALIDADES:
- * - Listar clientes do banco
- * - Criar cliente
- * - Upload de logo
- * - Atualização automática
+ * 🎯 OBJETIVO:
+ * Listar clientes + criar cliente + upload de logo
+ *
+ * 🧩 FUNCIONALIDADES:
+ * - Listagem com React Query
+ * - Criação de cliente
+ * - Modal
+ * - Upload de imagem
+ * - Feedback visual básico
  */
 
-import { useEffect, useState } from "react";
-import Layout from "@/components/layout/Layout";
-//import Upload from "@/components/forms/Upload";
+import { useState } from "react";
+import Layout from "@/components/layout/layout";
+import Upload from "@/components/forms/upload";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 /**
- * 🔹 Tipo retornado da API
+ * 🔹 Tipo do cliente
  */
 type Client = {
   id: string;
@@ -27,268 +32,79 @@ type Client = {
   };
 };
 
-export default function ClientesPage() {
+/**
+ * 🔹 Buscar clientes
+ */
+async function fetchClients(): Promise<Client[]> {
+  const res = await fetch("/api/clients");
 
-  /**
-   * 📦 Estado de clientes
-   */
-  const [clients, setClients] = useState<Client[]>([]);
+  if (!res.ok) throw new Error("Erro ao buscar clientes");
 
-  /**
-   * 🧠 Controle do modal
-   */
-  const [open, setOpen] = useState(false);
-
-  /**
-   * 📝 Formulário
-   */
-  const [name, setName] = useState("");
-  const [logo, setLogo] = useState("");
-
-  /**
-   * 🔄 Carregar clientes do backend
-   */
-  async function loadClients() {
-    const res = await fetch("/api/clientes");
-    const data = await res.json();
-
-    setClients(data);
-  }
-
-  /**
-   * ➕ Criar cliente
-   */
-  async function createClient() {
-    await fetch("/api/clientes", {
-      method: "POST",
-      body: JSON.stringify({ name, logo }),
-    });
-
-    /**
-     * Limpa formulário
-     */
-    setName("");
-    setLogo("");
-    setOpen(false);
-
-    /**
-     * Recarrega lista
-     */
-    loadClients();
-  }
-
-  /**
-   * 🚀 Executa ao abrir página
-   */
-  useEffect(() => {
-    loadClients();
-  }, []);
-
-  return (
-    <Layout>
-      {/* 🔝 HEADER */}
-      <div className="flex justify-between mb-6">
-        <h1 className="text-2xl font-bold">Clientes</h1>
-
-        <button
-          onClick={() => setOpen(true)}
-          className="bg-blue-600 text-white px-4 py-2 rounded"
-        >
-          Novo cliente
-        </button>
-      </div>
-
-      {/* 📋 LISTA */}
-      <div className="grid grid-cols-3 gap-4">
-
-        {clients.map((client) => (
-          <div key={client.id} className="bg-white p-4 rounded shadow">
-
-            {/* 🖼️ Logo */}
-            <div className="w-16 h-16 bg-gray-200 rounded mb-3 overflow-hidden">
-              {client.logo && (
-                <img src={client.logo} className="w-full h-full object-cover" />
-              )}
-            </div>
-
-            {/* 🏷️ Nome */}
-            <h2 className="font-semibold">{client.name}</h2>
-
-            {/* 📊 Posts */}
-            <p className="text-sm text-gray-500">
-              {client._count.posts} posts
-            </p>
-
-            {/* 🔘 Entrar */}
-            <button className="mt-3 bg-green-600 text-white px-3 py-1 rounded">
-              Entrar
-            </button>
-          </div>
-        ))}
-      </div>
-
-      {/* 🆕 MODAL */}
-      {open && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center">
-
-          <div className="bg-white p-6 rounded w-96">
-
-            <h2 className="text-lg font-bold mb-4">
-              Novo cliente
-            </h2>
-
-            {/* Nome */}
-            <input
-              placeholder="Nome do restaurante"
-              className="border p-2 w-full mb-3"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
-
-            {/* Upload */}
-            <Upload onUpload={setLogo} />
-
-            {/* Ações */}
-            <div className="flex justify-end gap-2 mt-4">
-              <button onClick={() => setOpen(false)}>
-                Cancelar
-              </button>
-
-              <button
-                onClick={createClient}
-                className="bg-blue-600 text-white px-4 py-2 rounded"
-              >
-                Salvar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </Layout>
-  );
+  return res.json();
 }
 
-"use client";
-
 /**
- * 👥 CLIENTES PAGE — LISTAGEM
- * =====================================================
- *
- * 🎯 OBJETIVO:
- * Exibir todos os clientes do usuário logado
- *
- * 🧩 FUNCIONALIDADES:
- * - Buscar clientes da API
- * - Exibir em formato de cards
- * - Mostrar quantidade de posts
- * - Botão para criar cliente
+ * 🔹 Criar cliente
  */
+async function createClientAPI(data: { name: string; logo: string }) {
+ const res = await fetch("/api/clients", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify(data),
+});
 
-import { useEffect, useState } from "react";
-import Layout from "@/components/layout/Layout";
-"use client";
+  if (!res.ok) throw new Error("Erro ao criar cliente");
 
-/**
- * 👥 CLIENTES PAGE (COM REACT QUERY)
- */
-
-import Layout from "@/components/layout/Layout";
-import { useQuery } from "@tanstack/react-query";
-
-/**
- * 🔹 Função que chama API
- */
-async function fetchClients() {
-  const res = await fetch("/api/clients");
   return res.json();
 }
 
 export default function ClientesPage() {
 
   /**
-   * 📡 useQuery → busca dados
+   * 📦 STATES
    */
-  const { data: clients, isLoading } = useQuery({
+  const [open, setOpen] = useState(false);
+  const [name, setName] = useState("");
+  const [logo, setLogo] = useState("");
+
+  /**
+   * 📡 React Query
+   */
+  const queryClient = useQueryClient();
+
+  const { data: clients, isLoading, error } = useQuery({
     queryKey: ["clients"],
     queryFn: fetchClients,
   });
 
-  return (
-    <Layout>
+  /**
+   * 🚀 Mutation
+   */
+  const mutation = useMutation({
+    mutationFn: createClientAPI,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["clients"] });
 
-      <h1 className="text-2xl font-bold mb-6">
-        Clientes
-      </h1>
-
-      {isLoading && <p>Carregando...</p>}
-
-      <div className="grid grid-cols-3 gap-4">
-
-        {clients?.map((client: any) => (
-          <div key={client.id} className="bg-white p-4 rounded shadow">
-
-            <h2>{client.name}</h2>
-
-            <p>{client._count.posts} posts</p>
-
-          </div>
-        ))}
-
-      </div>
-
-    </Layout>
-  );
-}
-
-/**
- * 🔹 Tipo do cliente (baseado na API)
- */
-type Client = {
-  id: string;
-  name: string;
-  logo?: string;
-  _count: {
-    posts: number;
-  };
-};
-
-/**
- * 🔹 Página principal
- */
-export default function ClientesPage() {
+      // limpa formulário
+      setName("");
+      setLogo("");
+      setOpen(false);
+    },
+  });
 
   /**
-   * 📦 Estado da lista
+   * 📤 Criar cliente
    */
-  const [clients, setClients] = useState<Client[]>([]);
-
-  /**
-   * ⏳ Estado de loading
-   */
-  const [loading, setLoading] = useState(true);
-
-  /**
-   * 🔄 Buscar clientes
-   */
-  async function loadClients() {
-    try {
-      const res = await fetch("/api/clients");
-      const data = await res.json();
-
-      setClients(data);
-    } catch (error) {
-      console.error("Erro ao carregar clientes");
-    } finally {
-      setLoading(false);
+  function handleCreate() {
+    if (!name) {
+      alert("Nome é obrigatório");
+      return;
     }
-  }
 
-  /**
-   * 🚀 Executa ao carregar página
-   */
-  useEffect(() => {
-    loadClients();
-  }, []);
+    mutation.mutate({ name, logo });
+  }
 
   return (
     <Layout>
@@ -302,10 +118,9 @@ export default function ClientesPage() {
           Clientes
         </h1>
 
-        {/* ➕ Criar cliente */}
         <button
-          onClick={() => alert("Abrir modal")}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg"
+          onClick={() => setOpen(true)}
+          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:scale-105 transition"
         >
           Novo cliente
         </button>
@@ -313,18 +128,27 @@ export default function ClientesPage() {
       </div>
 
       {/* =====================================================
+          ❌ ERRO
+      ===================================================== */}
+      {error && (
+        <p className="text-red-500">
+          Erro ao carregar clientes
+        </p>
+      )}
+
+      {/* =====================================================
           ⏳ LOADING
       ===================================================== */}
-      {loading && (
+      {isLoading && (
         <p>Carregando...</p>
       )}
 
       {/* =====================================================
-          📋 LISTA DE CLIENTES
+          📋 LISTA
       ===================================================== */}
       <div className="grid grid-cols-3 gap-4">
 
-        {clients.map((client) => (
+        {clients?.map((client) => (
           <div
             key={client.id}
             className="bg-white p-4 rounded-xl shadow hover:shadow-lg transition"
@@ -357,9 +181,7 @@ export default function ClientesPage() {
             </p>
 
             {/* 🔘 AÇÃO */}
-            <button
-              className="mt-3 bg-green-600 text-white px-3 py-1 rounded"
-            >
+            <button className="mt-3 bg-green-600 text-white px-3 py-1 rounded">
               Entrar
             </button>
 
@@ -369,12 +191,56 @@ export default function ClientesPage() {
       </div>
 
       {/* =====================================================
-          ❌ ESTADO VAZIO
+          ❌ EMPTY STATE
       ===================================================== */}
-      {!loading && clients.length === 0 && (
+      {!isLoading && clients?.length === 0 && (
         <p className="text-gray-500 mt-6">
           Nenhum cliente encontrado.
         </p>
+      )}
+
+      {/* =====================================================
+          🆕 MODAL
+      ===================================================== */}
+      {open && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center">
+
+          <div className="bg-white p-6 rounded w-96">
+
+            <h2 className="text-lg font-bold mb-4">
+              Novo cliente
+            </h2>
+
+            {/* 📝 INPUT */}
+            <input
+              placeholder="Nome do restaurante"
+              className="border p-2 w-full mb-3"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+
+            {/* 🖼️ UPLOAD */}
+            <Upload onUpload={setLogo} />
+
+            {/* 🔘 AÇÕES */}
+            <div className="flex justify-end gap-2 mt-4">
+
+              <button onClick={() => setOpen(false)}>
+                Cancelar
+              </button>
+
+              <button
+                onClick={handleCreate}
+                disabled={mutation.isPending}
+                className="bg-blue-600 text-white px-4 py-2 rounded"
+              >
+                {mutation.isPending ? "Salvando..." : "Salvar"}
+              </button>
+
+            </div>
+
+          </div>
+        </div>
       )}
 
     </Layout>

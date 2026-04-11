@@ -1,6 +1,3 @@
-/**
- * ⚙️ CONFIG
- */
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,57 +7,28 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-////////////////////////////////////////////////////////
-//////////////////// 👤 USERS ///////////////////////////
-////////////////////////////////////////////////////////
-
-/**
- * 👤 Usuário do sistema (admin/social media)
- */
 model User {
   id        String   @id @default(uuid())
   email     String   @unique
   password  String?
   createdAt DateTime @default(now())
 
-  /**
-   * 🔗 Um usuário pode ter vários clientes
-   */
   clients Client[]
+  medias  Media[]
 }
 
-////////////////////////////////////////////////////////
-//////////////////// 👥 CLIENTS /////////////////////////
-////////////////////////////////////////////////////////
-
-/**
- * 👥 Restaurante / Cliente
- */
 model Client {
   id        String   @id @default(uuid())
   name      String
   logo      String?
   createdAt DateTime @default(now())
 
-  /**
-   * 🔗 Relação com usuário
-   */
   userId String
   user   User   @relation(fields: [userId], references: [id])
 
-  /**
-   * 🔗 Relação com posts
-   */
   posts Post[]
 }
 
-////////////////////////////////////////////////////////
-//////////////////// 📝 POSTS ///////////////////////////
-////////////////////////////////////////////////////////
-
-/**
- * 📝 Post de rede social
- */
 model Post {
   id          String     @id @default(uuid())
   title       String?
@@ -70,107 +38,36 @@ model Post {
   scheduledAt DateTime?
   createdAt   DateTime   @default(now())
 
-  /**
-   * 🔗 Relação com cliente
-   */
   clientId String
   client   Client @relation(fields: [clientId], references: [id])
 
-  /**
-   * 🔗 Comentários
-   */
-  comments Comment[]
-
-  /**
-   * 🔗 Aprovações
-   */
+  comments  Comment[]
   approvals Approval[]
 }
 
-////////////////////////////////////////////////////////
-//////////////////// 💬 COMMENTS ////////////////////////
-////////////////////////////////////////////////////////
-
-/**
- * 💬 Comentários do cliente no post
- */
 model Comment {
   id        String   @id @default(uuid())
   content   String
   createdAt DateTime @default(now())
 
-  /**
-   * 🔗 Relação com post
-   */
   postId String
   post   Post   @relation(fields: [postId], references: [id])
 }
 
-////////////////////////////////////////////////////////
-//////////////////// ✅ APPROVALS ///////////////////////
-////////////////////////////////////////////////////////
-
-/**
- * ✅ Controle de aprovação
- */
 model Approval {
   id        String         @id @default(uuid())
   status    ApprovalStatus
   createdAt DateTime       @default(now())
 
-  /**
-   * 🔗 Relação com post
-   */
   postId String
   post   Post   @relation(fields: [postId], references: [id])
 }
 
-////////////////////////////////////////////////////////
-//////////////////// ENUMS //////////////////////////////
-////////////////////////////////////////////////////////
-
-/**
- * 🚦 Status do post
- */
 enum PostStatus {
   IDEA
   CREATING
   PENDING
   APPROVED
-}
-
-/**
- * ✅ Status de aprovação
- */
-enum ApprovalStatus {
-  APPROVED
-  CHANGES_REQUESTED
-}
-
-model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  password  String   // 🔐 obrigatório agora
-  createdAt DateTime @default(now())
-
-  clients   Client[]
-}
-
-model Client {
-  id        String   @id @default(uuid())
-  name      String
-  email     String   @unique
-  phone     String?
-  createdAt DateTime @default(now())
-}
-
-model Approval {
-  id        String   @id @default(uuid())
-  status    ApprovalStatus
-  createdAt DateTime @default(now())
-
-  postId    String
-  post      Post     @relation(fields: [postId], references: [id])
 }
 
 enum ApprovalStatus {
@@ -181,9 +78,9 @@ enum ApprovalStatus {
 model Media {
   id        String   @id @default(uuid())
   url       String
-  publicId  String   // id do cloudinary
+  publicId  String
   createdAt DateTime @default(now())
 
-  userId    String
-  user      User     @relation(fields: [userId], references: [id])
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
 }

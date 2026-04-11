@@ -1,20 +1,26 @@
 /**
- * 🌐 API — UPDATE STATUS DO POST
+ * 🌐 API — UPDATE STATUS DO POST (VERSÃO SÊNIOR)
  * =====================================================
  *
  * 🎯 OBJETIVO:
- * Atualizar o status de um post
+ * Atualizar o status de um post com segurança e padrão profissional
  *
  * 🧩 FUNCIONALIDADES:
- * - Validação de dados
- * - Autenticação
- * - Segurança (post pertence ao usuário)
+ * - Autenticação centralizada
+ * - Validação forte de dados
+ * - Segurança multi-tenant
+ * - Tipagem segura
+ * - Resposta padronizada
  */
 
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getServerSession } from "next-auth";
-import { authOptions } from "../../auth/[...nextauth]/route";
+import { getUserSession } from "@/lib/auth";
+
+/**
+ * 🚦 Tipagem de status
+ */
+type PostStatus = "IDEA" | "CREATING" | "PENDING" | "APPROVED";
 
 /**
  * 🔄 PATCH /api/posts/status
@@ -23,115 +29,128 @@ export async function PATCH(req: Request) {
   try {
 
     /**
-     * 🔐 Sessão do usuário
+     * 🔐 1. AUTENTICAÇÃO (PADRÃO)
      */
-    const session = await getServerSession(authOptions);
+    const sessionUser = await getUserSession();
 
-    if (!session?.user?.email) {
+    if (!sessionUser) {
       return NextResponse.json(
-        { error: "Não autorizado" },
+        { success: false, error: "Não autorizado" },
         { status: 401 }
       );
     }
 
     /**
-     * 📥 Body
+     * 📥 2. BODY
      */
     const body = await req.json();
 
-    const { postId, status } = body;
+    const { postId, status } = body as {
+      postId?: string;
+      status?: PostStatus;
+    };
 
     /**
-     * ❌ Validação
+     * ❌ 3. VALIDAÇÃO
      */
     if (!postId || !status) {
       return NextResponse.json(
-        { error: "postId e status são obrigatórios" },
+        { success: false, error: "postId e status são obrigatórios" },
         { status: 400 }
       );
     }
 
     /**
-     * 🔎 Busca usuário com clientes
+     * 🚦 4. VALIDAR STATUS
+     */
+    const allowedStatus: PostStatus[] = [
+      "IDEA",
+      "CREATING",
+      "PENDING",
+      "APPROVED",
+    ];
+
+    if (!allowedStatus.includes(status)) {
+      return NextResponse.json(
+        { success: false, error: "Status inválido" },
+        { status: 400 }
+      );
+    }
+
+    /**
+     * 🔎 5. BUSCAR USUÁRIO + CLIENTES
      */
     const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
-      include: {
-        clients: true,
-      },
+      where: { email: sessionUser.email },
+      include: { clients: true },
     });
 
     if (!user) {
       return NextResponse.json(
-        { error: "Usuário não encontrado" },
+        { success: false, error: "Usuário não encontrado" },
         { status: 404 }
       );
     }
 
     /**
-     * 🔎 Busca post com client
+     * 🔎 6. BUSCAR POST
      */
     const post = await prisma.post.findUnique({
       where: { id: postId },
-      include: {
-        client: true,
-      },
     });
 
-    /**
-     * ❌ Post não encontrado
-     */
     if (!post) {
       return NextResponse.json(
-        { error: "Post não encontrado" },
+        { success: false, error: "Post não encontrado" },
         { status: 404 }
       );
     }
 
     /**
-     * 🔒 Verifica se o cliente do post pertence ao usuário
+     * 🔒 7. SEGURANÇA (MULTI-TENANT)
      */
     const ownsClient = user.clients.some(
-      (c) => c.id === post.clientId
+      (client) => client.id === post.clientId
     );
 
     if (!ownsClient) {
       return NextResponse.json(
-        { error: "Acesso negado" },
+        { success: false, error: "Acesso negado" },
         { status: 403 }
       );
     }
 
     /**
-     * 🚦 Validação de status permitido
-     */
-    const allowedStatus = ["IDEA", "CREATING", "PENDING", "APPROVED"];
-
-    if (!allowedStatus.includes(status)) {
-      return NextResponse.json(
-        { error: "Status inválido" },
-        { status: 400 }
-      );
-    }
-
-    /**
-     * 🔄 Atualiza status
+     * 🔄 8. ATUALIZAÇÃO
      */
     const updatedPost = await prisma.post.update({
       where: { id: postId },
-      data: {
-        status,
-      },
+      data: { status },
     });
 
     /**
-     * ✅ Retorno
+     * ✅ 9. RESPOSTA PADRÃO
      */
-    return NextResponse.json(updatedPost);
+    return NextResponse.json(
+      {
+        success: true,
+        data: updatedPost,
+      },
+      { status: 200 }
+    );
 
   } catch (error) {
+
+    /**
+     * 🧠 LOG (DEBUG)
+     */
+    console.error("Erro ao atualizar status:", error);
+
     return NextResponse.json(
-      { error: "Erro ao atualizar status" },
+      {
+        success: false,
+        error: "Erro interno do servidor",
+      },
       { status: 500 }
     );
   }

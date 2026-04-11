@@ -1,19 +1,15 @@
 /**
  * ⏳ SKELETON LOADING
+ * =====================================================
+ *
+ * 🎯 OBJETIVO:
+ * Exibir placeholder durante carregamento
  */
 
-export default function Skeleton({ className }: any) {
+export default function Skeleton({ className = "" }: { className?: string }) {
   return (
     <div
       className={`animate-pulse bg-gray-200 rounded ${className}`}
     />
   );
-
-  {isLoading && (
-  <div className="grid grid-cols-3 gap-4">
-    {Array.from({ length: 6 }).map((_, i) => (
-      <Skeleton key={i} className="h-32" />
-    ))}
-  </div>
-)}
 }

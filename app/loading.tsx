@@ -9,7 +9,3 @@ export default function Loading() {
     </div>
   );
 }
-
-<button className="hover:scale-105 transition" disabled={loadingAI}>
-  {loadingAI ? "🤖 Gerando..." : "Gerar legenda"}
-</button>

@@ -1,16 +1,11 @@
 /**
  * 🌐 API — APPROVALS (VERSÃO PROFISSIONAL)
- * =====================================================
- *
- * 🎯 OBJETIVO:
- * - Registrar aprovação
- * - Atualizar status automaticamente
  */
 
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
-import { authOptions } from "../auth/[...nextauth]/route";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import {
   notifyPostApproved,
   notifyPostChanges,
@@ -21,7 +16,6 @@ import {
  */
 export async function POST(req: Request) {
   try {
-
     /**
      * 🔐 Sessão
      */
@@ -59,8 +53,87 @@ export async function POST(req: Request) {
     }
 
     /**
-     * 🔎 Usuário + clientes
+     * 🔎 Usuário
      */
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
-     
+    });
+
+    if (!user) {
+      return NextResponse.json(
+        { error: "Usuário não encontrado" },
+        { status: 404 }
+      );
+    }
+
+    /**
+     * 🔎 Post + client
+     */
+    const post = await prisma.post.findUnique({
+      where: { id: postId },
+      include: {
+        client: true,
+      },
+    });
+
+    if (!post) {
+      return NextResponse.json(
+        { error: "Post não encontrado" },
+        { status: 404 }
+      );
+    }
+
+    /**
+     * 🔐 Segurança (dono do client)
+     */
+    if (post.client.userId !== user.id) {
+      return NextResponse.json(
+        { error: "Sem permissão" },
+        { status: 403 }
+      );
+    }
+
+    /**
+     * 💾 Salvar aprovação
+     */
+    await prisma.approval.create({
+      data: {
+        postId,
+        status,
+      },
+    });
+
+    /**
+     * 🔄 Atualizar status do post
+     */
+    await prisma.post.update({
+      where: { id: postId },
+      data: {
+        status,
+      },
+    });
+
+    /**
+     * 🔔 NOTIFICAÇÕES (AGORA NO LUGAR CERTO)
+     */
+    if (status === "APPROVED") {
+      await notifyPostApproved(session.user.email);
+    }
+
+    if (status === "CHANGES_REQUESTED") {
+      await notifyPostChanges(session.user.email);
+    }
+
+    return NextResponse.json({
+      success: true,
+    });
+
+  } catch (error) {
+    console.error("Erro approvals:", error);
+
+    return NextResponse.json(
+      { error: "Erro interno" },
+      { status: 500 }
+    );
+  }
+}

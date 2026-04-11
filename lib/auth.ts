@@ -1,40 +1,18 @@
 /**
- * 🔐 Autenticação com JWT
- *
- * Responsável por:
- * - Gerar token de autenticação
- * - Validar token
- *
- * 📌 Usado em:
- * - Login
- * - Middleware (proteção de rotas)
+ * 🔐 AUTH HELPER (VERSÃO ESTÁVEL)
  */
 
-import jwt from "jsonwebtoken";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
-// Chave secreta (vem do .env)
-const JWT_SECRET = process.env.JWT_SECRET || "supersecret";
+export async function getUserSession() {
+  const session = await getServerSession(authOptions);
 
-/**
- * Gera um token JWT
- * @param user - Dados do usuário
- * @returns token JWT
- */
-export function generateToken(user: { id: string; email: string }) {
-  return jwt.sign(user, JWT_SECRET, {
-    expiresIn: "7d",
-  });
-}
-
-/**
- * Verifica se o token é válido
- * @param token
- * @returns dados do usuário ou null
- */
-export function verifyToken(token: string) {
-  try {
-    return jwt.verify(token, JWT_SECRET);
-  } catch {
+  if (!session?.user?.email) {
     return null;
   }
+
+  return {
+    email: session.user.email,
+  };
 }

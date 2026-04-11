@@ -12,11 +12,8 @@ export function success(data: any, status = 200) {
     success: true,
     data,
   }, { status });
-
-  return NextResponse.json({ error: "Erro" }, { status: 400 });
   
 }
-
 
 /**
  * ❌ Erro

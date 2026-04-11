@@ -2,9 +2,6 @@
 
 /**
  * 🌐 GLOBAL PROVIDERS
- * =====================================================
- * - NextAuth
- * - React Query
  */
 
 import { SessionProvider } from "next-auth/react";
@@ -13,36 +10,23 @@ import {
   QueryClientProvider,
 } from "@tanstack/react-query";
 import { Toaster } from "react-hot-toast";
-<Toaster />
-
-/**
- * 🔹 Cria instância do client
- */
-const queryClient = new QueryClient();
+import { useState } from "react";
 
 /**
  * 🔹 Wrapper global
  */
-export default function Providers({ children }: any) {
+export default function Providers({ children }: { children: React.ReactNode }) {
+  // 🔥 Evita recriar o client a cada render
+  const [queryClient] = useState(() => new QueryClient());
+
   return (
     <SessionProvider>
       <QueryClientProvider client={queryClient}>
         {children}
+
+        {/* 🔔 Toast global */}
+        <Toaster />
       </QueryClientProvider>
     </SessionProvider>
   );
 }
-
-{posts?.length === 0 && (
-  <div className="text-center py-10">
-
-    <p className="text-gray-500 mb-4">
-      Nenhum post ainda
-    </p>
-
-    <button className="bg-blue-600 text-white px-4 py-2 rounded">
-      Criar primeiro post
-    </button>
-
-  </div>
-)}
