@@ -163,3 +163,27 @@ model Client {
   phone     String?
   createdAt DateTime @default(now())
 }
+
+model Approval {
+  id        String   @id @default(uuid())
+  status    ApprovalStatus
+  createdAt DateTime @default(now())
+
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id])
+}
+
+enum ApprovalStatus {
+  APPROVED
+  CHANGES_REQUESTED
+}
+
+model Media {
+  id        String   @id @default(uuid())
+  url       String
+  publicId  String   // id do cloudinary
+  createdAt DateTime @default(now())
+
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+}

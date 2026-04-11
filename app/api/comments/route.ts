@@ -11,6 +11,9 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../auth/[...nextauth]/route";
+import { notifyNewComment } from "@/lib/notifications";
+
+await notifyNewComment(session.user.email, content);
 
 /**
  * 📋 GET /api/comments?postId=xxx

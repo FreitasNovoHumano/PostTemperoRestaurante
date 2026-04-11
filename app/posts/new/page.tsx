@@ -1,24 +1,17 @@
 "use client";
 
 /**
- * ✍️ CREATE POST PAGE
+ * ✍️ CREATE POST + IA
  * =====================================================
  *
  * 🎯 OBJETIVO:
- * Criar novo post
- *
- * 🧩 FUNCIONALIDADES:
- * - Upload de imagem
- * - Legenda
- * - Status
- * - Seleção de cliente
- * - Integração com API
+ * Permitir gerar legenda automaticamente com IA
  */
 
 import { useState } from "react";
 import Layout from "@/components/layout/Layout";
 import Upload from "@/components/forms/Upload";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 
 /**
@@ -38,28 +31,37 @@ async function createPost(data: any) {
     body: JSON.stringify(data),
   });
 
-  if (!res.ok) {
-    throw new Error("Erro ao criar post");
-  }
+  if (!res.ok) throw new Error("Erro ao criar post");
+
+  return res.json();
+}
+
+/**
+ * 🤖 Gerar legenda
+ */
+async function generateCaptionAPI(theme: string) {
+  const res = await fetch("/api/ai/caption", {
+    method: "POST",
+    body: JSON.stringify({
+      theme,
+      tone: "engajador",
+    }),
+  });
 
   return res.json();
 }
 
 export default function CreatePostPage() {
 
-  /**
-   * 📦 Estados
-   */
   const [caption, setCaption] = useState("");
   const [image, setImage] = useState("");
-  const [status, setStatus] = useState("IDEA");
   const [clientId, setClientId] = useState("");
+  const [loadingAI, setLoadingAI] = useState(false);
 
   const router = useRouter();
-  const queryClient = useQueryClient();
 
   /**
-   * 📡 Buscar clientes
+   * 📡 Clientes
    */
   const { data: clients } = useQuery({
     queryKey: ["clients"],
@@ -67,19 +69,39 @@ export default function CreatePostPage() {
   });
 
   /**
-   * 🚀 Mutation
+   * 🚀 Criar post
    */
   const mutation = useMutation({
     mutationFn: createPost,
-
-    /**
-     * ✅ Sucesso
-     */
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["posts"] });
-      router.push("/posts");
-    },
+    onSuccess: () => router.push("/posts"),
   });
+
+  /**
+   * 🤖 GERAR LEGENDA
+   */
+  async function handleGenerateCaption() {
+
+    if (!caption) {
+      alert("Digite algo base (ex: pizza, promoção, hambúrguer)");
+      return;
+    }
+
+    try {
+      setLoadingAI(true);
+
+      const data = await generateCaptionAPI(caption);
+
+      /**
+       * ✨ Atualiza campo
+       */
+      setCaption(data.caption);
+
+    } catch {
+      alert("Erro ao gerar legenda");
+    } finally {
+      setLoadingAI(false);
+    }
+  }
 
   /**
    * 📤 Submit
@@ -87,15 +109,9 @@ export default function CreatePostPage() {
   function handleSubmit(e: any) {
     e.preventDefault();
 
-    if (!caption || !clientId) {
-      alert("Preencha os campos obrigatórios");
-      return;
-    }
-
     mutation.mutate({
       caption,
       image,
-      status,
       clientId,
     });
   }
@@ -103,67 +119,53 @@ export default function CreatePostPage() {
   return (
     <Layout>
 
-      <h1 className="text-2xl font-bold mb-6">
+      <h1 className="text-2xl mb-6">
         Criar Post
       </h1>
 
-      {/* =====================================================
-          📝 FORM
-      ===================================================== */}
       <form onSubmit={handleSubmit} className="max-w-md">
 
-        {/* 🧾 CLIENTE */}
+        {/* CLIENTE */}
         <select
           value={clientId}
           onChange={(e) => setClientId(e.target.value)}
           className="border p-2 w-full mb-4"
         >
-          <option value="">Selecione um cliente</option>
+          <option value="">Selecione</option>
 
-          {clients?.map((client: any) => (
-            <option key={client.id} value={client.id}>
-              {client.name}
+          {clients?.map((c: any) => (
+            <option key={c.id} value={c.id}>
+              {c.name}
             </option>
           ))}
-
         </select>
 
-        {/* 🖼️ UPLOAD */}
+        {/* UPLOAD */}
         <Upload onUpload={setImage} />
 
-        {image && (
-          <img
-            src={image}
-            className="w-40 mt-4 rounded"
-          />
-        )}
-
-        {/* 📝 LEGENDA */}
+        {/* LEGENDA */}
         <textarea
-          placeholder="Legenda do post"
+          placeholder="Digite algo base ou legenda"
           value={caption}
           onChange={(e) => setCaption(e.target.value)}
           className="border p-2 w-full mt-4"
         />
 
-        {/* 🚦 STATUS */}
-        <select
-          value={status}
-          onChange={(e) => setStatus(e.target.value)}
-          className="border p-2 w-full mt-4"
+        {/* 🤖 BOTÃO IA */}
+        <button
+          type="button"
+          onClick={handleGenerateCaption}
+          className="bg-purple-600 text-white px-4 py-2 mt-2 rounded w-full"
         >
-          <option value="IDEA">Ideia</option>
-          <option value="CREATING">Em criação</option>
-          <option value="PENDING">Aguardando aprovação</option>
-          <option value="APPROVED">Aprovado</option>
-        </select>
+          {loadingAI ? "Gerando..." : "🤖 Gerar legenda com IA"}
+        </button>
 
-        {/* 🔘 BOTÃO */}
+        {/* SALVAR */}
         <button
           type="submit"
-          className="bg-blue-600 text-white px-4 py-2 mt-6 w-full rounded"
+          className="bg-blue-600 text-white px-4 py-2 mt-4 w-full rounded"
         >
-          {mutation.isPending ? "Salvando..." : "Salvar"}
+          Salvar
         </button>
 
       </form>

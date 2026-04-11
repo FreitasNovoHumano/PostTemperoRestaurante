@@ -1,42 +1,66 @@
 /**
- * ✅ API - Aprovação de Posts
+ * 🌐 API — APPROVALS (VERSÃO PROFISSIONAL)
+ * =====================================================
  *
- * Endpoint:
- * POST /api/approvals
- *
- * Body:
- * {
- *   postId: string,
- *   status: "approved" | "rejected"
- * }
+ * 🎯 OBJETIVO:
+ * - Registrar aprovação
+ * - Atualizar status automaticamente
  */
 
-import { approvalService } from "@/services/approval.service";
 import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+import { getServerSession } from "next-auth";
+import { authOptions } from "../auth/[...nextauth]/route";
+import {
+  notifyPostApproved,
+  notifyPostChanges,
+} from "@/lib/notifications";
 
+/**
+ * ➕ POST /api/approvals
+ */
 export async function POST(req: Request) {
-  const { postId, status } = await req.json();
+  try {
 
-  // Validação
-  if (!postId || !status) {
-    return NextResponse.json(
-      { error: "Dados inválidos" },
-      { status: 400 }
-    );
-  }
+    /**
+     * 🔐 Sessão
+     */
+    const session = await getServerSession(authOptions);
 
-  if (status === "approved") {
-    const result = await approvalService.approve(postId);
-    return NextResponse.json(result);
-  }
+    if (!session?.user?.email) {
+      return NextResponse.json(
+        { error: "Não autorizado" },
+        { status: 401 }
+      );
+    }
 
-  if (status === "rejected") {
-    const result = await approvalService.reject(postId);
-    return NextResponse.json(result);
-  }
+    /**
+     * 📥 Dados
+     */
+    const { postId, status } = await req.json();
 
-  return NextResponse.json(
-    { error: "Status inválido" },
-    { status: 400 }
-  );
-}
+    if (!postId || !status) {
+      return NextResponse.json(
+        { error: "Dados inválidos" },
+        { status: 400 }
+      );
+    }
+
+    /**
+     * 🚦 Validação
+     */
+    const allowed = ["APPROVED", "CHANGES_REQUESTED"];
+
+    if (!allowed.includes(status)) {
+      return NextResponse.json(
+        { error: "Status inválido" },
+        { status: 400 }
+      );
+    }
+
+    /**
+     * 🔎 Usuário + clientes
+     */
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email },
+     

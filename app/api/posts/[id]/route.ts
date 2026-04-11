@@ -1,24 +1,21 @@
-/**
- * 📝 API - Posts
- */
-
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
-export async function GET() {
-  const posts = await prisma.post.findMany({
-    include: { client: true },
+/**
+ * 📋 GET post por ID
+ */
+export async function GET(_: Request, { params }: any) {
+
+  const post = await prisma.post.findUnique({
+    where: { id: params.id },
   });
 
-  return NextResponse.json(posts);
-}
-
-export async function POST(req: Request) {
-  const body = await req.json();
-
-  const post = await prisma.post.create({
-    data: body,
-  });
+  if (!post) {
+    return NextResponse.json(
+      { error: "Post não encontrado" },
+      { status: 404 }
+    );
+  }
 
   return NextResponse.json(post);
 }
