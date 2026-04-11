@@ -8,9 +8,11 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { verifyToken } from "./services/auth.service";
+import { getToken } from "next-auth/jwt";
 
 export function proxy(req: NextRequest) {
   const token = req.cookies.get("token")?.value;
+  
 
   const isAuthRoute = req.nextUrl.pathname.startsWith("/login");
 

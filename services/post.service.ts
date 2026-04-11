@@ -70,3 +70,25 @@ async duplicate(postId: string) {
   });
 }
 };
+
+/**
+ * 📝 Post Service
+ * =====================================================
+ *
+ * Responsável pela lógica de posts
+ */
+
+import { prisma } from "@/lib/prisma";
+
+export const postService = {
+
+  /**
+   * 📋 Listar posts com filtro
+   */
+  async findAll(status?: string) {
+    return prisma.post.findMany({
+      where: status ? { status } : {},
+      orderBy: { createdAt: "desc" },
+    });
+  },
+};

@@ -76,7 +76,11 @@ export const clientService = {
    */
   async findAll() {
     return prisma.client.findMany({
-      include: { posts: true },
+      include: {
+        _count: { 
+          select: { posts: true }
+        }
+      }
     });
   },
 

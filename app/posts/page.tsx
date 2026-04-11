@@ -1,77 +1,142 @@
 "use client";
 
-import { useEffect, useState } from "react";
-
 /**
- * 📝 Tela de Posts (real)
+ * 📝 POSTS PAGE — LISTAGEM
+ * =====================================================
+ *
+ * 🎯 OBJETIVO:
+ * Listar posts filtrados por cliente
+ *
+ * 🧩 FUNCIONALIDADES:
+ * - Buscar posts da API
+ * - Exibir lista com status
+ * - Badge colorido por status
  */
 
+import Layout from "@/components/layout/Layout";
+import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+
+/**
+ * 🎨 Função para cor do status
+ */
+function getStatusColor(status: string) {
+  switch (status) {
+    case "IDEA":
+      return "bg-gray-300";
+    case "CREATING":
+      return "bg-blue-300";
+    case "PENDING":
+      return "bg-yellow-300";
+    case "APPROVED":
+      return "bg-green-300";
+    default:
+      return "bg-gray-200";
+  }
+}
+
+/**
+ * 🔹 Buscar posts
+ */
+async function fetchPosts(clientId: string) {
+  const res = await fetch(`/api/posts?clientId=${clientId}`);
+  return res.json();
+}
 
 export default function PostsPage() {
-  const [posts, setPosts] = useState<any[]>([]);
-  const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
 
-  async function load() {
-    const res = await fetch("/api/posts");
-    setPosts(await res.json());
-  }
+  /**
+   * 📦 Estado do cliente selecionado
+   */
+  const [clientId, setClientId] = useState("");
 
-  async function create() {
-    await fetch("/api/posts", {
-      method: "POST",
-      body: JSON.stringify({
-        title,
-        content,
-        clientId: "1",
-      }),
-    });
-
-    load();
-  }
-
-  async function generateAI() {
-    const res = await fetch("/api/ai/generate", {
-      method: "POST",
-      body: JSON.stringify({
-        prompt: title,
-      }),
-    });
-
-    const data = await res.json();
-    setContent(data.text);
-  }
-
-  useEffect(() => {
-    load();
-  }, []);
+  /**
+   * 📡 Query (só executa se tiver clientId)
+   */
+  const { data: posts, isLoading } = useQuery({
+    queryKey: ["posts", clientId],
+    queryFn: () => fetchPosts(clientId),
+    enabled: !!clientId,
+  });
 
   return (
-    <div className="p-6">
-      <h1 className="text-xl font-bold">Posts</h1>
+    <Layout>
 
-      <input
-        className="border p-2 mt-4 w-full"
-        placeholder="Título"
-        onChange={(e) => setTitle(e.target.value)}
-      />
+      {/* =====================================================
+          🔝 HEADER
+      ===================================================== */}
+      <div className="flex justify-between items-center mb-6">
 
-      <textarea
-        className="border p-2 mt-2 w-full"
-        value={content}
-        onChange={(e) => setContent(e.target.value)}
-      />
+        <h1 className="text-2xl font-bold">
+          Posts
+        </h1>
 
-      <div className="mt-2 space-x-2">
-        <button onClick={create}>Criar</button>
-        <button onClick={generateAI}>Gerar IA</button>
+        <button className="bg-blue-600 text-white px-4 py-2 rounded">
+          Novo Post
+        </button>
+
       </div>
 
-      <ul className="mt-4">
-        {posts.map((p) => (
-          <li key={p.id}>{p.title}</li>
+      {/* =====================================================
+          🔍 FILTRO (CLIENTE)
+      ===================================================== */}
+      <input
+        placeholder="Digite o clientId"
+        value={clientId}
+        onChange={(e) => setClientId(e.target.value)}
+        className="border p-2 mb-4 w-full"
+      />
+
+      {/* =====================================================
+          ⏳ LOADING
+      ===================================================== */}
+      {isLoading && <p>Carregando posts...</p>}
+
+      {/* =====================================================
+          📋 LISTA
+      ===================================================== */}
+      <div className="space-y-4">
+
+        {posts?.map((post: any) => (
+          <div
+            key={post.id}
+            className="flex justify-between items-center bg-white p-4 rounded shadow"
+          >
+
+            {/* 📝 INFO */}
+            <div>
+
+              <h2 className="font-semibold">
+                {post.title || "Sem título"}
+              </h2>
+
+              <p className="text-sm text-gray-500">
+                {post.caption}
+              </p>
+
+            </div>
+
+            {/* 🏷️ STATUS */}
+            <span
+              className={`px-3 py-1 rounded text-sm ${getStatusColor(post.status)}`}
+            >
+              {post.status}
+            </span>
+
+          </div>
         ))}
-      </ul>
-    </div>
+
+      </div>
+
+      {/* =====================================================
+          ❌ ESTADO VAZIO
+      ===================================================== */}
+      {!isLoading && posts?.length === 0 && (
+        <p className="text-gray-500 mt-4">
+          Nenhum post encontrado.
+        </p>
+      )}
+
+    </Layout>
   );
 }

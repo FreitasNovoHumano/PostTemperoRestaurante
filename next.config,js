@@ -1,0 +1,12 @@
+/**
+ * ⚙️ Configuração do Next.js
+ * Desativa Turbopack e usa Webpack (mais estável)
+ */
+
+const nextConfig = {
+  experimental: {
+    turbo: false,
+  },
+};
+
+module.exports = nextConfig;

@@ -1,25 +1,29 @@
 /**
  * 💬 Comment Service
- *
- * Gerencia comentários dos posts
+ * =====================================================
+ * Responsável pela lógica de comentários
  */
 
 import { prisma } from "@/lib/prisma";
 
 export const commentService = {
-  async create(postId: string, comment: string) {
-    return prisma.postComment.create({
-      data: {
-        postId,
-        comment,
-      },
+
+  /**
+   * 📋 Buscar comentários de um post
+   */
+  async findByPost(postId: string) {
+    return prisma.comment.findMany({
+      where: { postId },
+      orderBy: { createdAt: "desc" },
     });
   },
 
-  async findByPost(postId: string) {
-    return prisma.postComment.findMany({
-      where: { postId },
-      orderBy: { createdAt: "desc" },
+  /**
+   * ➕ Criar comentário
+   */
+  async create(data: { content: string; postId: string }) {
+    return prisma.comment.create({
+      data,
     });
   },
 };

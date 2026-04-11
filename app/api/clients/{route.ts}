@@ -1,53 +1,132 @@
-import { NextResponse } from "next/server";
-import { getClients, createClient } from "@/services/client.service";
-
 /**
- * GET /api/clients
- * Retorna todos os clientes
- */
-export async function GET() {
-  const clients = getClients();
-
-  return NextResponse.json(clients);
-}
-
-/**
- * POST /api/clients
- * Cria um novo cliente
- */
-export async function POST(req: Request) {
-  // Dados enviados no body
-  const body = await req.json();
-
-  // Cria cliente via service
-  const newClient = createClient(body);
-
-  return NextResponse.json(newClient);
-}
-
-/**
- * 👥 API de Clientes
+ * 🌐 API — CLIENTS
+ * =====================================================
  *
- * GET  -> lista clientes
- * POST -> cria cliente
+ * 🎯 OBJETIVO:
+ * - GET → listar clientes do usuário logado
+ * - POST → criar cliente
  */
 
-import { clientService } from "@/services/client.service";
 import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+import { getServerSession } from "next-auth";
+import { authOptions } from "../auth/[...nextauth]/route";
 
 /**
- * Lista todos os clientes
+ * 📋 GET /api/clients
  */
 export async function GET() {
-  const clients = await clientService.findAll();
-  return NextResponse.json(clients);
+  try {
+
+    /**
+     * 🔐 Recupera sessão
+     */
+    const session = await getServerSession(authOptions);
+
+    /**
+     * ❌ Não autenticado
+     */
+    if (!session?.user?.email) {
+      return NextResponse.json(
+        { error: "Não autorizado" },
+        { status: 401 }
+      );
+    }
+
+    /**
+     * 🔎 Busca usuário
+     */
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email },
+      include: {
+        clients: {
+          include: {
+            _count: {
+              select: { posts: true }, // conta posts
+            },
+          },
+        },
+      },
+    });
+
+    /**
+     * ❌ Segurança
+     */
+    if (!user) {
+      return NextResponse.json(
+        { error: "Usuário não encontrado" },
+        { status: 404 }
+      );
+    }
+
+    /**
+     * ✅ Retorna clientes
+     */
+    return NextResponse.json(user.clients);
+
+  } catch (error) {
+
+    /**
+     * ❌ Erro inesperado
+     */
+    return NextResponse.json(
+      { error: "Erro ao buscar clientes" },
+      { status: 500 }
+    );
+  }
 }
 
 /**
- * Cria novo cliente
+ * ➕ POST /api/clients
+ * (mantém o que já fizemos)
  */
 export async function POST(req: Request) {
-  const body = await req.json();
-  const client = await clientService.create(body);
-  return NextResponse.json(client);
+  try {
+
+    const session = await getServerSession(authOptions);
+
+    if (!session?.user?.email) {
+      return NextResponse.json(
+        { error: "Não autorizado" },
+        { status: 401 }
+      );
+    }
+
+    const body = await req.json();
+    const { name, logo } = body;
+
+    if (!name) {
+      return NextResponse.json(
+        { error: "Nome é obrigatório" },
+        { status: 400 }
+      );
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email },
+    });
+
+    if (!user) {
+      return NextResponse.json(
+        { error: "Usuário não encontrado" },
+        { status: 404 }
+      );
+    }
+
+    const client = await prisma.client.create({
+      data: {
+        name,
+        logo,
+        userId: user.id,
+      },
+    });
+
+    return NextResponse.json(client, { status: 201 });
+
+  } catch (error) {
+    return NextResponse.json(
+      { error: "Erro ao criar cliente" },
+      { status: 500 }
+    );
+  }
 }

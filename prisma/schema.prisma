@@ -1,7 +1,6 @@
 /**
- * 🧱 SCHEMA COMPLETO - SaaS Restaurante IA
+ * ⚙️ CONFIG
  */
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -11,77 +10,156 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+////////////////////////////////////////////////////////
+//////////////////// 👤 USERS ///////////////////////////
+////////////////////////////////////////////////////////
+
 /**
- * 👤 Usuário (Auth - NextAuth)
+ * 👤 Usuário do sistema (admin/social media)
  */
 model User {
-  id       String  @id @default(uuid())
-  name     String?
-  email    String  @unique
-  password String?
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String?
+  createdAt DateTime @default(now())
 
+  /**
+   * 🔗 Um usuário pode ter vários clientes
+   */
   clients Client[]
 }
 
+////////////////////////////////////////////////////////
+//////////////////// 👥 CLIENTS /////////////////////////
+////////////////////////////////////////////////////////
+
 /**
- * 🏢 Cliente (restaurante)
+ * 👥 Restaurante / Cliente
  */
 model Client {
-  id    String @id @default(uuid())
-  name  String
-  email String?
+  id        String   @id @default(uuid())
+  name      String
+  logo      String?
+  createdAt DateTime @default(now())
 
+  /**
+   * 🔗 Relação com usuário
+   */
   userId String
-  user   User @relation(fields: [userId], references: [id])
+  user   User   @relation(fields: [userId], references: [id])
 
+  /**
+   * 🔗 Relação com posts
+   */
   posts Post[]
 }
 
+////////////////////////////////////////////////////////
+//////////////////// 📝 POSTS ///////////////////////////
+////////////////////////////////////////////////////////
+
 /**
- * 📝 Post
+ * 📝 Post de rede social
  */
 model Post {
-  id        String   @id @default(uuid())
-  title     String
-  content   String
-  imageUrl  String?
-  status    String   @default("draft") // draft | scheduled | published
-  scheduled DateTime?
-  createdAt DateTime @default(now())
+  id          String     @id @default(uuid())
+  title       String?
+  caption     String
+  image       String?
+  status      PostStatus @default(IDEA)
+  scheduledAt DateTime?
+  createdAt   DateTime   @default(now())
 
+  /**
+   * 🔗 Relação com cliente
+   */
   clientId String
   client   Client @relation(fields: [clientId], references: [id])
 
-  comments PostComment[]
+  /**
+   * 🔗 Comentários
+   */
+  comments Comment[]
+
+  /**
+   * 🔗 Aprovações
+   */
+  approvals Approval[]
 }
 
+////////////////////////////////////////////////////////
+//////////////////// 💬 COMMENTS ////////////////////////
+////////////////////////////////////////////////////////
+
 /**
- * 💬 Comentários
+ * 💬 Comentários do cliente no post
  */
-model PostComment {
+model Comment {
   id        String   @id @default(uuid())
-  comment   String
+  content   String
   createdAt DateTime @default(now())
 
+  /**
+   * 🔗 Relação com post
+   */
   postId String
-  post   Post @relation(fields: [postId], references: [id])
+  post   Post   @relation(fields: [postId], references: [id])
+}
+
+////////////////////////////////////////////////////////
+//////////////////// ✅ APPROVALS ///////////////////////
+////////////////////////////////////////////////////////
+
+/**
+ * ✅ Controle de aprovação
+ */
+model Approval {
+  id        String         @id @default(uuid())
+  status    ApprovalStatus
+  createdAt DateTime       @default(now())
+
+  /**
+   * 🔗 Relação com post
+   */
+  postId String
+  post   Post   @relation(fields: [postId], references: [id])
+}
+
+////////////////////////////////////////////////////////
+//////////////////// ENUMS //////////////////////////////
+////////////////////////////////////////////////////////
+
+/**
+ * 🚦 Status do post
+ */
+enum PostStatus {
+  IDEA
+  CREATING
+  PENDING
+  APPROVED
 }
 
 /**
- * 📦 Templates
+ * ✅ Status de aprovação
  */
-model Template {
-  id      String @id @default(uuid())
-  title   String
-  content String
+enum ApprovalStatus {
+  APPROVED
+  CHANGES_REQUESTED
 }
 
-/**
- * 📊 Logs de IA (opcional - controle)
- */
-model AILog {
+model User {
   id        String   @id @default(uuid())
-  prompt    String
-  response  String
+  email     String   @unique
+  password  String   // 🔐 obrigatório agora
+  createdAt DateTime @default(now())
+
+  clients   Client[]
+}
+
+model Client {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  phone     String?
   createdAt DateTime @default(now())
 }
