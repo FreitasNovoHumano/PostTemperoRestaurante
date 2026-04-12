@@ -18,7 +18,7 @@
  * - Layout global (Sidebar)
  */
 
-import Layout from "@/components/layout/Layout";
+//import Layout from "@/components/layout/Layout";
 import { useSession } from "next-auth/react";
 
 /**
