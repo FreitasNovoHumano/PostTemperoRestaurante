@@ -1,10 +1,10 @@
 export const runtime = "nodejs";
 
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import cloudinary from "@/lib/cloudinary";
+import { prisma } from "../../../../lib/prisma";
+import cloudinary from "../../../../lib/cloudinary";
 import { Buffer } from "buffer";
-import { getUserSession } from "@/lib/auth";
+import { getUserSession } from "../../../../lib/auth";
 
 /**
  * 📤 POST — Upload

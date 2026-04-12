@@ -3,13 +3,13 @@
  */
 
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "../../../lib/prisma";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "../auth/[...nextauth]/route";
 import {
   notifyPostApproved,
   notifyPostChanges,
-} from "@/lib/notifications";
+} from "../../../lib/notifications";
 
 /**
  * ➕ POST /api/approvals
@@ -114,7 +114,7 @@ export async function POST(req: Request) {
     });
 
     /**
-     * 🔔 NOTIFICAÇÕES (AGORA NO LUGAR CERTO)
+     * 🔔 NOTIFICAÇÕES
      */
     if (status === "APPROVED") {
       await notifyPostApproved(session.user.email);
