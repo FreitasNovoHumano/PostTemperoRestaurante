@@ -3,8 +3,8 @@
  */
 
 import { NextResponse } from "next/server";
-import { prisma } from "../../../../../lib/prisma";
-import { getUserSession } from "../../../../../lib/auth";
+import { prisma } from "@/lib/prisma";
+import { getUserSession } from "@/lib/auth";
 
 export async function PATCH(
   req: Request,

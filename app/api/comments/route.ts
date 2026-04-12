@@ -1,11 +1,21 @@
 /**
  * 🌐 API — COMMENTS (VERSÃO SÊNIOR)
+ * =====================================================
+ *
+ * 🎯 OBJETIVO:
+ * - GET → listar comentários
+ * - POST → criar comentário
+ *
+ * 🧩 PADRÃO:
+ * - Auth centralizado
+ * - Segurança multi-tenant
+ * - Resposta padronizada
  */
 
 import { NextResponse } from "next/server";
-import { prisma } from "../../../lib/prisma";
-import { getUserSession } from "../../../lib/auth";
-import { notifyNewComment } from "../../../lib/notifications";
+import { prisma } from "@/lib/prisma";
+import { getUserSession } from "@/lib/auth";
+import { notifyNewComment } from "@/lib/notifications";
 
 /**
  * 📋 GET /api/comments?postId=xxx
@@ -193,7 +203,7 @@ export async function POST(req: Request) {
     });
 
     /**
-     * 📧 NOTIFICAÇÃO
+     * 📧 NOTIFICAÇÃO (AGORA NO LUGAR CERTO)
      */
     await notifyNewComment(sessionUser.email, content);
 
