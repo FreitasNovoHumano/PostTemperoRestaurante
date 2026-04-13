@@ -16,7 +16,7 @@
  */
 
 import { useState } from "react";
-import Layout from "@/components/layout/layout";
+import Layout from "@/components/layout/Layout";
 import Upload from "@/components/forms/upload";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 

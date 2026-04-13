@@ -4,7 +4,7 @@
  * Estrutura base com sidebar + conteúdo
  */
 
-import Sidebar from "./Sidebar";
+import Sidebar from "./sidebar";
 
 export default function Layout({ children }: any) {
   return (
