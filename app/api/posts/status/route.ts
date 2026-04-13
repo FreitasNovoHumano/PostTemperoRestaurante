@@ -23,17 +23,27 @@ import { getUserSession } from "@/lib/auth";
 type PostStatus = "IDEA" | "CREATING" | "PENDING" | "APPROVED";
 
 /**
+ * 🔐 Tipagem da sessão (corrige erro do TypeScript)
+ */
+interface SessionUser {
+  email: string;
+}
+
+/**
  * 🔄 PATCH /api/posts/status
  */
 export async function PATCH(req: Request) {
   try {
-
     /**
      * 🔐 1. AUTENTICAÇÃO (PADRÃO)
+     * Forçamos a tipagem para garantir acesso ao email
      */
-    const sessionUser = await getUserSession();
+    const sessionUser = (await getUserSession()) as SessionUser | null;
 
-    if (!sessionUser) {
+    /**
+     * 🚫 Bloqueia acesso não autenticado ou inválido
+     */
+    if (!sessionUser || !sessionUser.email) {
       return NextResponse.json(
         { success: false, error: "Não autorizado" },
         { status: 401 }
@@ -85,6 +95,9 @@ export async function PATCH(req: Request) {
       include: { clients: true },
     });
 
+    /**
+     * 🚫 Usuário não encontrado
+     */
     if (!user) {
       return NextResponse.json(
         { success: false, error: "Usuário não encontrado" },
@@ -99,6 +112,9 @@ export async function PATCH(req: Request) {
       where: { id: postId },
     });
 
+    /**
+     * 🚫 Post não encontrado
+     */
     if (!post) {
       return NextResponse.json(
         { success: false, error: "Post não encontrado" },
@@ -108,6 +124,7 @@ export async function PATCH(req: Request) {
 
     /**
      * 🔒 7. SEGURANÇA (MULTI-TENANT)
+     * Garante que o usuário só altera posts dos próprios clientes
      */
     const ownsClient = user.clients.some(
       (client) => client.id === post.clientId
@@ -140,12 +157,14 @@ export async function PATCH(req: Request) {
     );
 
   } catch (error) {
-
     /**
      * 🧠 LOG (DEBUG)
      */
     console.error("Erro ao atualizar status:", error);
 
+    /**
+     * ❌ RESPOSTA DE ERRO PADRÃO
+     */
     return NextResponse.json(
       {
         success: false,

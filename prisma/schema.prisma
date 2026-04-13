@@ -84,3 +84,10 @@ model Media {
   userId String
   user   User   @relation(fields: [userId], references: [id])
 }
+
+model Template {
+  id        String   @id @default(cuid())
+  name      String
+  content   String?
+  createdAt DateTime @default(now())
+}
