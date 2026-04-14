@@ -19,7 +19,7 @@ export const approvalService = {
   async approve(postId: string) {
     return prisma.post.update({
       where: { id: postId },
-      data: { status: "published" },
+      data: { status: "APPROVED" },
     });
   },
 
@@ -29,7 +29,7 @@ export const approvalService = {
   async reject(postId: string) {
     return prisma.post.update({
       where: { id: postId },
-      data: { status: "draft" },
+      data: { status: "IDEA" },
     });
   },
 };

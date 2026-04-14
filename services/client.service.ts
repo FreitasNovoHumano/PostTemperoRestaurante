@@ -1,19 +1,20 @@
 /**
- * Simulação de banco em memória
- * OBS: será substituído por Prisma depois
+ * 🧠 Simulação de banco em memória
+ * --------------------------------------------------
+ * OBS: usado apenas para testes locais (mock)
+ * Será substituído pelo Prisma em produção
  */
 let clients: any[] = [];
 
 /**
- * Retorna todos os clientes
+ * 📋 Retorna todos os clientes (mock)
  */
 export function getClients() {
   return clients;
 }
 
 /**
- * Cria um novo cliente
- * @param data Dados do cliente (name, email, etc)
+ * ➕ Cria um novo cliente (mock)
  */
 export function createClient(data: any) {
   const newClient = {
@@ -27,65 +28,84 @@ export function createClient(data: any) {
 }
 
 /**
- * Atualiza um cliente existente
- * @param id ID do cliente
- * @param data Novos dados
+ * ✏️ Atualiza cliente (mock)
  */
 export function updateClient(id: number, data: any) {
-  const index = clients.findIndex(c => c.id === id);
+  const index = clients.findIndex((c) => c.id === id);
 
-  // Se não encontrar o cliente
   if (index === -1) return null;
 
-  // Atualiza mantendo dados antigos + novos
   clients[index] = { ...clients[index], ...data };
 
   return clients[index];
 }
 
 /**
- * Remove um cliente
- * @param id ID do cliente
+ * ❌ Remove cliente (mock)
  */
 export function deleteClient(id: number) {
-  clients = clients.filter(c => c.id !== id);
+  clients = clients.filter((c) => c.id !== id);
 }
 
 /**
- * 👥 Client Service
+ * =====================================================
+ * 👥 Client Service (PRISMA)
+ * =====================================================
  *
- * Camada responsável por toda lógica relacionada a clientes.
+ * Camada responsável por regras de negócio de clientes
  *
- * 📌 Boa prática:
- * Nunca acessar o Prisma direto nas rotas.
- * Sempre usar services.
+ * 📌 Regra importante:
+ * Nunca acessar Prisma direto na rota
  */
 
 import { prisma } from "@/lib/prisma";
 
+/**
+ * 📦 Tipagem do input de criação
+ */
+interface CreateClientDTO {
+  name: string;
+  email?: string;
+  userId: string;
+}
+
 export const clientService = {
   /**
-   * Cria um novo cliente
+   * ➕ Cria um novo cliente vinculado ao usuário
    */
-  async create(data: { name: string; email?: string }) {
-    return prisma.client.create({ data });
-  },
+  async create(data: CreateClientDTO) {
+    const { name, email, userId } = data;
+
+    return prisma.client.create({
+      data: {
+        name,
+        email,
+
+        /**
+         * 🔗 Relacionamento obrigatório com User
+         */
+        user: {
+          connect: { id: userId },
+        },
+      },
+    });
+  }, // ✅ CORREÇÃO: vírgula adicionada aqui
 
   /**
-   * Retorna todos os clientes com seus posts
+   * 📋 Retorna todos os clientes com contagem de posts
    */
   async findAll() {
     return prisma.client.findMany({
       include: {
-        _count: { 
-          select: { posts: true }
-        }
-      }
+        _count: {
+          select: { posts: true },
+        },
+      },
     });
   },
 
   /**
-   * Busca cliente por ID
+   * 🔎 Busca cliente por ID
    */
   async findById(id: string) {
     return prisma.client.findUnique({
@@ -94,7 +114,7 @@ export const clientService = {
   },
 
   /**
-   * Atualiza cliente
+   * ✏️ Atualiza cliente
    */
   async update(id: string, data: any) {
     return prisma.client.update({
@@ -104,7 +124,7 @@ export const clientService = {
   },
 
   /**
-   * Remove cliente
+   * ❌ Remove cliente
    */
   async delete(id: string) {
     return prisma.client.delete({
