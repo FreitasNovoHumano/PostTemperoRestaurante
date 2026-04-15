@@ -1,125 +1,103 @@
-"use client";
-
 /**
- * 📊 DASHBOARD PAGE — PostTempero
+ * 📌 DashboardLayout
  * =====================================================
  *
- * 🎯 OBJETIVO:
- * Exibir uma visão geral do sistema para o usuário,
- * permitindo rápida tomada de decisão.
+ * 🎯 RESPONSABILIDADE:
+ * - Definir a estrutura visual padrão das páginas do dashboard
+ * - Aplicar layout com Sidebar + Header + Conteúdo
  *
- * 🧩 ELEMENTOS:
- * - Cards de resumo (métricas principais)
- * - Lista de próximos posts
- * - Ações rápidas
- * - Layout com menu lateral
+ * 🧠 CONCEITO:
+ * Esse layout envolve TODAS as páginas dentro de (dashboard)
+ * graças ao App Router do Next.js.
  *
- * 📌 DEPENDÊNCIAS:
- * - Layout global (Sidebar)
+ * Exemplo:
+ * /dashboard
+ * /clients
+ * /posts
+ *
+ * Todas essas páginas herdam este layout automaticamente.
+ *
+ * 🧩 ESTRUTURA:
+ * ┌───────────────────────────────┐
+ * │ Sidebar │ Header             │
+ * │         ├────────────────────│
+ * │         │ Conteúdo (children)│
+ * └───────────────────────────────┘
  */
 
-import Layout from "@/components/layout/Layout";
-import { useSession } from "next-auth/react";
+import Sidebar from "@/components/layout/sidebar"
 
 /**
- * 🔹 Componente principal do Dashboard
+ * 🧱 Componente principal do layout
+ *
+ * @param children - Conteúdo dinâmico da página atual
  */
-export default function DashboardPage() {
+export default function DashboardLayout({ children }: any) {
   return (
-    <Layout>
-      {/* 📊 Título */}
-      <h1 className="text-2xl font-bold mb-6">Dashboard</h1>
-
-      {/* =====================================================
-          📊 CARDS DE RESUMO
-      ===================================================== */}
-      <div className="grid grid-cols-3 gap-4 mb-8">
-
-        {/* 📝 Posts da semana */}
-        <div className="bg-white p-4 rounded-xl shadow">
-          <p className="text-gray-500 text-sm">
-            Posts criados essa semana
-          </p>
-          <h2 className="text-2xl font-bold">12</h2>
-        </div>
-
-        {/* ⏳ Pendentes */}
-        <div className="bg-white p-4 rounded-xl shadow">
-          <p className="text-gray-500 text-sm">
-            Pendentes de aprovação
-          </p>
-          <h2 className="text-2xl font-bold text-yellow-500">4</h2>
-        </div>
-
-        {/* ✅ Aprovados */}
-        <div className="bg-white p-4 rounded-xl shadow">
-          <p className="text-gray-500 text-sm">
-            Posts aprovados
-          </p>
-          <h2 className="text-2xl font-bold text-green-500">8</h2>
-        </div>
-      </div>
-
-      {/* =====================================================
-          📅 PRÓXIMOS POSTS
-      ===================================================== */}
-      <div className="bg-white p-4 rounded-xl shadow mb-8">
-        <h2 className="text-lg font-semibold mb-4">
-          Próximos posts
-        </h2>
-
-        {/* Lista simples */}
-        <div className="space-y-3">
-
-          {/* Item */}
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-gray-200 rounded" />
-            <div>
-              <p className="font-medium">Promoção de Hambúrguer</p>
-              <small className="text-gray-500">20/04/2026</small>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-gray-200 rounded" />
-            <div>
-              <p className="font-medium">Combo Família</p>
-              <small className="text-gray-500">22/04/2026</small>
-            </div>
-          </div>
-
-        </div>
-      </div>
-
-      {/* =====================================================
-          ⚡ AÇÕES RÁPIDAS
-      ===================================================== */}
-      <div className="flex gap-4">
-
-        {/* ➕ Criar post */}
-        <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
-          Criar post
-        </button>
-
-        {/* 👤 Adicionar cliente */}
-        <button className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition">
-          Adicionar cliente
-        </button>
-      </div>
-    </Layout>
-  );
 
     /**
-   * 🔐 Dados da sessão
-   */
-  const { data: session } = useSession();
+     * 🧱 Container principal
+     *
+     * - flex → layout horizontal (sidebar + conteúdo)
+     * - min-h-screen → ocupa altura total da tela
+     * - bg-gray-100 → fundo suave padrão de dashboards
+     */
+    <div className="flex min-h-screen bg-gray-100">
 
-  return (
-    <div>
-      <h1>Dashboard</h1>
+      {/* =========================
+          📌 SIDEBAR
+          =========================
+          - Navegação lateral fixa
+          - Contém links principais do sistema
+      */}
+      <Sidebar />
 
-      {/* 👤 Usuário logado */}
-      <p>Usuário: {session?.user?.email}</p>
+      {/* =========================
+          📌 ÁREA PRINCIPAL
+          =========================
+          - Ocupa todo o espaço restante (flex-1)
+          - Contém header + conteúdo da página
+      */}
+      <div className="flex-1 flex flex-col">
+
+        {/* =========================
+            📌 HEADER (TOPO)
+            =========================
+            - Barra superior do sistema
+            - Pode conter:
+              - Nome do sistema
+              - Usuário logado
+              - Ações rápidas
+        */}
+        <header className="h-16 bg-white border-b flex items-center justify-between px-6">
+          
+          {/* Nome do sistema */}
+          <h1 className="font-semibold text-lg">
+            🍔 PostTempero
+          </h1>
+
+          {/* Info do usuário */}
+          <div className="text-sm text-gray-500">
+            Bem-vindo, Fábio 👋
+          </div>
+        </header>
+
+        {/* =========================
+            📌 CONTEÚDO DA PÁGINA
+            =========================
+            - Onde cada rota renderiza seu conteúdo
+            - children = page.tsx atual
+        */}
+        <main className="flex-1 p-6">
+
+          {/* Container centralizado */}
+          <div className="max-w-6xl mx-auto">
+            {children}
+          </div>
+
+        </main>
+
+      </div>
     </div>
-  );
+  )
 }

@@ -1,10 +1,8 @@
 node_modules
-.env
 .next
-
-# Environment variables
 .env
 .env.local
-.env.development
 .env.production
-.env.*.local
+.env.development
+dist
+coverage

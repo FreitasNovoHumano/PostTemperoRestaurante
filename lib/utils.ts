@@ -7,6 +7,7 @@
 /**
  * Formata data no padrão brasileiro
  */
+
 export function formatDate(date: Date) {
   return new Intl.DateTimeFormat("pt-BR").format(date);
 }
