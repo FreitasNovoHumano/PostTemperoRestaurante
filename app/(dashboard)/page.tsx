@@ -32,8 +32,12 @@ import Sidebar from "@/components/layout/sidebar"
  *
  * @param children - Conteúdo dinâmico da página atual
  */
-export default function DashboardPage() {
-  return <h1>Dashboard funcionando</h1>
+export default function DashboardLayout({ children }: any) {
+  return (
+    <div>
+      {children}
+    </div>
+  )
 }
 
     /**
