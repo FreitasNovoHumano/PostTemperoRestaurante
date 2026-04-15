@@ -1,18 +1,37 @@
-export default function Sidebar() {
+/**
+ * 📌 DashboardLayout
+ * =====================================================
+ *
+ * 🎯 RESPONSABILIDADE:
+ * - Definir estrutura padrão do dashboard
+ * - Renderizar Sidebar + Conteúdo
+ *
+ * 🧠 OBS:
+ * - children = conteúdo da página atual
+ * - aplicado automaticamente pelo Next.js
+ */
+
+import Sidebar from "@/components/layout/sidebar"
+
+/**
+ * 🧱 Layout principal
+ */
+export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
-    <aside className="w-64 bg-white border-r p-4">
-      
-      <h2 className="text-xl font-bold mb-6">
-        🍔 PostTempero
-      </h2>
 
-      <nav className="flex flex-col gap-2">
-        <a className="p-2 rounded hover:bg-gray-100">Dashboard</a>
-        <a className="p-2 rounded hover:bg-gray-100">Clientes</a>
-        <a className="p-2 rounded hover:bg-gray-100">Posts</a>
-        <a className="p-2 rounded hover:bg-gray-100">Calendário</a>
-      </nav>
+    /**
+     * Layout em linha (sidebar + conteúdo)
+     */
+    <div style={{ display: "flex" }}>
 
-    </aside>
+      {/* Sidebar */}
+      <Sidebar />
+
+      {/* Conteúdo */}
+      <main style={{ padding: 20 }}>
+        {children}
+      </main>
+
+    </div>
   )
 }

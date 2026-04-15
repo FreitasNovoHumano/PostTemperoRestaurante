@@ -1,24 +1,46 @@
 /**
- * 🧭 Sidebar — Navegação principal
+ * 📌 Sidebar
+ * =====================================================
  *
- * Contém links principais do sistema
+ * 🎯 RESPONSABILIDADE:
+ * - Navegação principal do sistema
+ * - Links entre páginas
  */
 
-import Link from "next/link";
+import Link from "next/link"
 
-export default function sidebar() {
+export default function Sidebar() {
   return (
-    <aside className="w-64 bg-gray-900 text-white min-h-screen p-6">
-      <h2 className="text-xl font-bold mb-6">🍔 PostTempero</h2>
 
-      <nav className="flex flex-col gap-4">
+    /**
+     * Container lateral
+     */
+    <div style={{ width: 200, padding: 20, borderRight: "1px solid #ccc" }}>
 
-        <Link href="/dashboard">Dashboard</Link>
-        <Link href="/clientes">Clientes</Link>
-        <Link href="/posts">Posts</Link>
-        <Link href="/calendar">Calendário</Link>
+      {/* Logo / Nome */}
+      <h2>🍔 PostTempero</h2>
+
+      {/* Navegação */}
+      <nav style={{ marginTop: 20 }}>
+
+        <div>
+          <Link href="/">Dashboard</Link>
+        </div>
+
+        <div>
+          <Link href="/clients">Clientes</Link>
+        </div>
+
+        <div>
+          <Link href="/posts">Posts</Link>
+        </div>
+
+        <div>
+          <Link href="/calendar">Calendário</Link>
+        </div>
 
       </nav>
-    </aside>
-  );
+
+    </div>
+  )
 }
