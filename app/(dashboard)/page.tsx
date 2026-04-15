@@ -1,108 +1,196 @@
 /**
- * 📌 DashboardLayout
+ * 📌 DashboardPage
  * =====================================================
  *
  * 🎯 RESPONSABILIDADE:
- * - Definir a estrutura visual padrão das páginas do dashboard
- * - Aplicar layout com Sidebar + Header + Conteúdo
+ * - Exibir visão geral do sistema
+ * - Mostrar métricas principais
+ * - Exibir próximos posts
+ * - Oferecer ações rápidas
  *
- * 🧠 CONCEITO:
- * Esse layout envolve TODAS as páginas dentro de (dashboard)
- * graças ao App Router do Next.js.
- *
- * Exemplo:
- * /dashboard
- * /clients
- * /posts
- *
- * Todas essas páginas herdam este layout automaticamente.
- *
- * 🧩 ESTRUTURA:
- * ┌───────────────────────────────┐
- * │ Sidebar │ Header             │
- * │         ├────────────────────│
- * │         │ Conteúdo (children)│
- * └───────────────────────────────┘
+ * 🧠 OBS:
+ * - Usa componentes do shadcn (Card, Button)
+ * - Layout já é controlado pelo layout.tsx
  */
 
-import Sidebar from "@/components/layout/sidebar"
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+
+import { Button } from "@/components/ui/button"
 
 /**
- * 🧱 Componente principal do layout
- *
- * @param children - Conteúdo dinâmico da página atual
+ * 🧱 Componente principal do Dashboard
  */
-export default function DashboardLayout({ children }: any) {
+export default function DashboardPage() {
   return (
-    <div>
-      {children}
-    </div>
-  )
-}
 
     /**
-     * 🧱 Container principal
+     * 📦 Container principal
      *
-     * - flex → layout horizontal (sidebar + conteúdo)
-     * - min-h-screen → ocupa altura total da tela
-     * - bg-gray-100 → fundo suave padrão de dashboards
+     * space-y-6 → espaçamento vertical entre seções
      */
-    <div className="flex min-h-screen bg-gray-100">
+    <div className="space-y-6">
 
       {/* =========================
-          📌 SIDEBAR
+          📌 HEADER DO DASHBOARD
           =========================
-          - Navegação lateral fixa
-          - Contém links principais do sistema
+          - Título da página
+          - Botão de ação principal
       */}
-      <Sidebar />
+      <div className="flex items-center justify-between">
 
-      {/* =========================
-          📌 ÁREA PRINCIPAL
-          =========================
-          - Ocupa todo o espaço restante (flex-1)
-          - Contém header + conteúdo da página
-      */}
-      <div className="flex-1 flex flex-col">
+        {/* Título */}
+        <h1 className="text-2xl font-bold">
+          Dashboard
+        </h1>
 
-        {/* =========================
-            📌 HEADER (TOPO)
-            =========================
-            - Barra superior do sistema
-            - Pode conter:
-              - Nome do sistema
-              - Usuário logado
-              - Ações rápidas
-        */}
-        <header className="h-16 bg-white border-b flex items-center justify-between px-6">
-          
-          {/* Nome do sistema */}
-          <h1 className="font-semibold text-lg">
-            🍔 PostTempero
-          </h1>
-
-          {/* Info do usuário */}
-          <div className="text-sm text-gray-500">
-            Bem-vindo, Fábio 👋
-          </div>
-        </header>
-
-        {/* =========================
-            📌 CONTEÚDO DA PÁGINA
-            =========================
-            - Onde cada rota renderiza seu conteúdo
-            - children = page.tsx atual
-        */}
-        <main className="flex-1 p-6">
-
-          {/* Container centralizado */}
-          <div className="max-w-6xl mx-auto">
-            {children}
-          </div>
-
-        </main>
+        {/* Ação principal */}
+        <Button>
+          + Criar post
+        </Button>
 
       </div>
+
+      {/* =========================
+          📊 CARDS DE MÉTRICAS
+          =========================
+          - Visão rápida dos dados do sistema
+      */}
+      <div className="grid gap-4 md:grid-cols-3">
+
+        {/* Card 1 */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm text-gray-500">
+              Posts da semana
+            </CardTitle>
+          </CardHeader>
+
+          <CardContent>
+            <p className="text-3xl font-bold">
+              12
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* Card 2 */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm text-gray-500">
+              Pendentes
+            </CardTitle>
+          </CardHeader>
+
+          <CardContent>
+            <p className="text-3xl font-bold">
+              4
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* Card 3 */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm text-gray-500">
+              Aprovados
+            </CardTitle>
+          </CardHeader>
+
+          <CardContent>
+            <p className="text-3xl font-bold">
+              8
+            </p>
+          </CardContent>
+        </Card>
+
+      </div>
+
+      {/* =========================
+          📦 CONTEÚDO PRINCIPAL
+          =========================
+          - Dividido em duas colunas (responsivo)
+      */}
+      <div className="grid gap-4 md:grid-cols-2">
+
+        {/* =========================
+            📅 PRÓXIMOS POSTS
+            =========================
+        */}
+        <Card>
+
+          <CardHeader>
+            <CardTitle>
+              Próximos posts
+            </CardTitle>
+          </CardHeader>
+
+          <CardContent className="space-y-4">
+
+            {/* Post 1 */}
+            <div className="border-b pb-2">
+              <p className="font-medium">
+                🍔 Promoção de Hambúrguer
+              </p>
+
+              <p className="text-sm text-gray-500">
+                20/04/2026
+              </p>
+            </div>
+
+            {/* Post 2 */}
+            <div>
+              <p className="font-medium">
+                👨‍👩‍👧 Combo Família
+              </p>
+
+              <p className="text-sm text-gray-500">
+                22/04/2026
+              </p>
+            </div>
+
+          </CardContent>
+
+        </Card>
+
+        {/* =========================
+            ⚡ AÇÕES RÁPIDAS
+            =========================
+        */}
+        <Card>
+
+          <CardHeader>
+            <CardTitle>
+              Ações rápidas
+            </CardTitle>
+          </CardHeader>
+
+          <CardContent className="flex flex-col gap-3">
+
+            {/* Criar post */}
+            <Button className="w-full">
+              Criar novo post
+            </Button>
+
+            {/* Adicionar cliente */}
+            <Button variant="outline" className="w-full">
+              Adicionar cliente
+            </Button>
+
+            {/* Ver calendário */}
+            <Button variant="secondary" className="w-full">
+              Ver calendário
+            </Button>
+
+          </CardContent>
+
+        </Card>
+
+      </div>
+
     </div>
   )
 }
